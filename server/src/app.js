@@ -23,11 +23,27 @@ const app = express();
 // Security headers
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
-// CORS configuration (allow deployed frontend or local dev)
-const clientOrigin = process.env.CLIENT_URL || "*";
+// CORS configuration (allow deployed frontend or local dev across any localhost port)
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map((s) => s.trim())
+  : [];
+
 app.use(
   cors({
-    origin: clientOrigin === "*" ? true : clientOrigin.split(","),
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        process.env.NODE_ENV !== "production" ||
+        origin.includes("localhost") ||
+        origin.includes("127.0.0.1") ||
+        allowedOrigins.length === 0 ||
+        allowedOrigins.includes("*") ||
+        allowedOrigins.includes(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   })
 );
