@@ -1,0 +1,154 @@
+### PunchPoint API Collection (REST Client / Thunder Client / Postman)
+@baseUrl = http://localhost:5000/api
+@adminEmail = avery@punchpoint.demo
+@managerEmail = marcus@punchpoint.demo
+@employeeEmail = sofia@punchpoint.demo
+@password = Password123!
+
+### 1. Health Check
+GET http://localhost:5000/health
+
+### 2. Login as Employee
+# @name loginEmployee
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{employeeEmail}}",
+  "password": "{{password}}"
+}
+
+### Store Token
+@employeeToken = {{loginEmployee.response.body.data.token}}
+
+### 3. Login as Manager
+# @name loginManager
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{password}}"
+}
+
+### Store Manager Token
+@managerToken = {{loginManager.response.body.data.token}}
+
+### 4. Login as Admin
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{password}}"
+}
+
+### Store Admin Token
+@adminToken = {{loginAdmin.response.body.data.token}}
+
+### 5. Get Current User Profile (/auth/me)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{employeeToken}}
+
+### 6. Punch In (Employee)
+POST {{baseUrl}}/attendance/punch-in
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "lat": 28.6139,
+  "lng": 77.2090,
+  "selfieUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+}
+
+### 7. Punch Out (Employee)
+POST {{baseUrl}}/attendance/punch-out
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "lat": 28.6139,
+  "lng": 77.2090,
+  "selfieUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+}
+
+### 8. Get My Attendance History
+GET {{baseUrl}}/attendance/me?page=1&limit=10
+Authorization: Bearer {{employeeToken}}
+
+### 9. Get Team Attendance (Manager)
+GET {{baseUrl}}/attendance/team?page=1&limit=20
+Authorization: Bearer {{managerToken}}
+
+### 10. Get All Attendance (Admin)
+GET {{baseUrl}}/attendance/all?page=1&limit=20
+Authorization: Bearer {{adminToken}}
+
+### 11. Validate Attendance Record (Manager/Admin)
+PATCH {{baseUrl}}/attendance/REPLACE_WITH_ATTENDANCE_ID/validate
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "status": "valid",
+  "remarks": "Verified photo matches employee profile"
+}
+
+### 12. Submit Overtime Request (Employee)
+POST {{baseUrl}}/overtime
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "attendanceId": "REPLACE_WITH_ATTENDANCE_ID",
+  "hours": 1.5,
+  "reason": "Late night deployment and production smoke testing"
+}
+
+### 13. Get My Overtime Requests (Employee)
+GET {{baseUrl}}/overtime/me
+Authorization: Bearer {{employeeToken}}
+
+### 14. Get Pending Overtime Requests (Manager/Admin)
+GET {{baseUrl}}/overtime/pending
+Authorization: Bearer {{managerToken}}
+
+### 15. Review Overtime Request (Manager/Admin)
+PATCH {{baseUrl}}/overtime/REPLACE_WITH_OT_ID
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+  "status": "approved",
+  "reviewNote": "Approved. Excellent work on the deployment."
+}
+
+### 16. Get All Users (Admin/Manager)
+GET {{baseUrl}}/users?page=1&limit=20
+Authorization: Bearer {{adminToken}}
+
+### 17. Create User (Admin)
+POST {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Jordan Lee",
+  "email": "jordan@punchpoint.demo",
+  "password": "Password123!",
+  "role": "employee",
+  "team": "Product Engineering"
+}
+
+### 18. Daily Report Scoped by Role
+GET {{baseUrl}}/reports/daily?date=2026-11-20
+Authorization: Bearer {{managerToken}}
+
+### 19. Get Notifications
+GET {{baseUrl}}/notifications
+Authorization: Bearer {{employeeToken}}
+
+### 20. Mark Notification as Read
+PATCH {{baseUrl}}/notifications/REPLACE_WITH_NOTIF_ID/read
+Authorization: Bearer {{employeeToken}}
