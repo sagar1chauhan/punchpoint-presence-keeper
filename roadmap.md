@@ -1,0 +1,5 @@
+- [ ] Implement session handling: store token and verified user in the auth slice/localStorage, verify stored tokens with GET /auth/me at startup, never authorize from a stored role, clear auth data on logout or 401, and remember only the last-used email.
+- [ ] Finish PunchPoint design tokens, responsive shell, light/dark preference, and login/signup screens.
+- [ ] Finish the employee dashboard, mock attendance/overtime views, and camera/location punch flow.
+- [ ] Add environment example and handoff notes; add and run business-rule tests.
+- [ ] Verify the rendered app and key punch interaction, inspect preview build logs, then commit the completed changes.

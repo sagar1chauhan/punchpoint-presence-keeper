@@ -1,0 +1,69 @@
+import type { AttendanceRecord, OvertimeRequest, User, UserRole } from "@/types/attendance";
+import { getShiftStatus } from "@/types/attendance";
+
+export const demoUsers: User[] = [
+  { id: "emp-01", name: "Sofia Chen", email: "sofia@punchpoint.demo", role: "employee", initials: "SC", team: "Product design" },
+  { id: "mgr-01", name: "Marcus Reed", email: "marcus@punchpoint.demo", role: "manager", initials: "MR", team: "Product design" },
+  { id: "adm-01", name: "Avery Patel", email: "avery@punchpoint.demo", role: "admin", initials: "AP", team: "People operations" },
+];
+
+export const demoAttendance: AttendanceRecord[] = [
+  { id: "att-30", date: "2026-11-20", day: "Fri", punchIn: "08:57", punchOut: "17:21", hours: 8.4, shiftStatus: getShiftStatus(8.4), validationStatus: "valid", overtimeStatus: "approved" },
+  { id: "att-29", date: "2026-11-19", day: "Thu", punchIn: "09:08", punchOut: "16:50", hours: 7.7, shiftStatus: getShiftStatus(7.7), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-28", date: "2026-11-18", day: "Wed", punchIn: "08:48", punchOut: "17:06", hours: 8.3, shiftStatus: getShiftStatus(8.3), validationStatus: "pending", overtimeStatus: "pending" },
+  { id: "att-27", date: "2026-11-17", day: "Tue", punchIn: "09:12", punchOut: "16:38", hours: 7.4, shiftStatus: getShiftStatus(7.4), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-26", date: "2026-11-16", day: "Mon", punchIn: "08:54", punchOut: "17:25", hours: 8.5, shiftStatus: getShiftStatus(8.5), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-25", date: "2026-11-13", day: "Fri", punchIn: "09:03", punchOut: "16:51", hours: 7.8, shiftStatus: getShiftStatus(7.8), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-24", date: "2026-11-12", day: "Thu", punchIn: "08:46", punchOut: "17:19", hours: 8.6, shiftStatus: getShiftStatus(8.6), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-23", date: "2026-11-11", day: "Wed", punchIn: "09:11", punchOut: "16:52", hours: 7.7, shiftStatus: getShiftStatus(7.7), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-22", date: "2026-11-10", day: "Tue", punchIn: "08:59", punchOut: "17:14", hours: 8.3, shiftStatus: getShiftStatus(8.3), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-21", date: "2026-11-09", day: "Mon", punchIn: "09:05", punchOut: "16:45", hours: 7.7, shiftStatus: getShiftStatus(7.7), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-20", date: "2026-11-06", day: "Fri", punchIn: "08:51", punchOut: "17:23", hours: 8.5, shiftStatus: getShiftStatus(8.5), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-19", date: "2026-11-05", day: "Thu", punchIn: "09:06", punchOut: "16:51", hours: 7.8, shiftStatus: getShiftStatus(7.8), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-18", date: "2026-11-04", day: "Wed", punchIn: "08:44", punchOut: "17:17", hours: 8.6, shiftStatus: getShiftStatus(8.6), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-17", date: "2026-11-03", day: "Tue", punchIn: "09:02", punchOut: "16:53", hours: 7.9, shiftStatus: getShiftStatus(7.9), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-16", date: "2026-11-02", day: "Mon", punchIn: "08:55", punchOut: "17:16", hours: 8.4, shiftStatus: getShiftStatus(8.4), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-15", date: "2026-10-30", day: "Fri", punchIn: "08:58", punchOut: "16:54", hours: 8, shiftStatus: getShiftStatus(8), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-14", date: "2026-10-29", day: "Thu", punchIn: "09:04", punchOut: "16:40", hours: 7.6, shiftStatus: getShiftStatus(7.6), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-13", date: "2026-10-28", day: "Wed", punchIn: "08:49", punchOut: "17:12", hours: 8.4, shiftStatus: getShiftStatus(8.4), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-12", date: "2026-10-27", day: "Tue", punchIn: "09:09", punchOut: "16:47", hours: 7.6, shiftStatus: getShiftStatus(7.6), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-11", date: "2026-10-26", day: "Mon", punchIn: "08:52", punchOut: "17:22", hours: 8.5, shiftStatus: getShiftStatus(8.5), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-10", date: "2026-10-23", day: "Fri", punchIn: "09:13", punchOut: "16:49", hours: 7.6, shiftStatus: getShiftStatus(7.6), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-09", date: "2026-10-22", day: "Thu", punchIn: "08:50", punchOut: "17:20", hours: 8.5, shiftStatus: getShiftStatus(8.5), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-08", date: "2026-10-21", day: "Wed", punchIn: "09:01", punchOut: "16:57", hours: 7.9, shiftStatus: getShiftStatus(7.9), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-07", date: "2026-10-20", day: "Tue", punchIn: "08:56", punchOut: "17:18", hours: 8.4, shiftStatus: getShiftStatus(8.4), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-06", date: "2026-10-19", day: "Mon", punchIn: "09:07", punchOut: "16:50", hours: 7.7, shiftStatus: getShiftStatus(7.7), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-05", date: "2026-10-16", day: "Fri", punchIn: "08:54", punchOut: "17:14", hours: 8.3, shiftStatus: getShiftStatus(8.3), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-04", date: "2026-10-15", day: "Thu", punchIn: "09:10", punchOut: "16:47", hours: 7.6, shiftStatus: getShiftStatus(7.6), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-03", date: "2026-10-14", day: "Wed", punchIn: "08:47", punchOut: "17:15", hours: 8.5, shiftStatus: getShiftStatus(8.5), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-02", date: "2026-10-13", day: "Tue", punchIn: "09:05", punchOut: "16:51", hours: 7.8, shiftStatus: getShiftStatus(7.8), validationStatus: "valid", overtimeStatus: "none" },
+  { id: "att-01", date: "2026-10-12", day: "Mon", punchIn: "08:58", punchOut: "17:13", hours: 8.3, shiftStatus: getShiftStatus(8.3), validationStatus: "valid", overtimeStatus: "none" },
+];
+
+export const demoOvertime: OvertimeRequest[] = [
+  { id: "ot-02", date: "2026-11-18", hours: 1.25, reason: "Launch review with the product team", status: "pending" },
+  { id: "ot-01", date: "2026-11-20", hours: 0.4, reason: "Final design handoff", status: "approved" },
+];
+
+export const getDemoUser = (role: UserRole, name?: string, email?: string): User => {
+  const existing = demoUsers.find((user) => user.role === role);
+  const fallback: User = { id: `demo-${role}`, name: name || "Demo teammate", email: email || "demo@punchpoint.demo", role, initials: "DT", team: "Product design" };
+  return { ...(existing ?? fallback), ...(name ? { name, initials: name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase() } : {}), ...(email ? { email } : {}) };
+};
+
+export const weeklyHours = [
+  { day: "Mon", hours: 8.5 },
+  { day: "Tue", hours: 7.4 },
+  { day: "Wed", hours: 8.3 },
+  { day: "Thu", hours: 7.7 },
+  { day: "Fri", hours: 8.4 },
+  { day: "Sat", hours: 0 },
+  { day: "Sun", hours: 0 },
+];
+
+export const officeGeofence = {
+  enabled: false,
+  latitude: 28.6139,
+  longitude: 77.209,
+  radiusMeters: 200,
+};
