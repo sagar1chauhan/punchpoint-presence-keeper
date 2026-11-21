@@ -36,8 +36,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useGetMyAttendanceQuery, useRequestOvertimeMutation } from "@/services/api";
 import { resolveSelfieUrl } from "@/lib/utils";
+import { useAppSelector } from "@/app/hooks";
 
 export function AttendanceView() {
+  const { user } = useAppSelector((state) => state.auth);
   const [page, setPage] = useState(1);
   const [fromFilter, setFromFilter] = useState("");
   const [toFilter, setToFilter] = useState("");
@@ -253,7 +255,7 @@ export function AttendanceView() {
                           <Eye className="h-3 w-3 mr-1" />
                           View
                         </Button>
-                        {record.overtimeStatus === "none" && (
+                        {user?.role !== "admin" && record.overtimeStatus === "none" && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -381,7 +383,7 @@ export function AttendanceView() {
           )}
 
           <DrawerFooter className="px-0 pt-2 grid grid-cols-2 gap-2">
-            {selectedRecord && selectedRecord.overtimeStatus === "none" ? (
+            {user?.role !== "admin" && selectedRecord && selectedRecord.overtimeStatus === "none" ? (
               <Button
                 variant="default"
                 className="rounded-xl text-xs bg-indigo-600 hover:bg-indigo-700 text-white"

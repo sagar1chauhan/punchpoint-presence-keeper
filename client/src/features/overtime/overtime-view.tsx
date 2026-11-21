@@ -131,21 +131,23 @@ export function OvertimeView() {
             Track overtime claims, review pending team submissions, and monitor approval workflows.
           </p>
         </div>
-        <Button
-          onClick={() => {
-            const eligible = myAttendance.find((a) => a.overtimeStatus === "none");
-            if (eligible) setSelectedAttId(eligible.id);
-            setCreateModalOpen(true);
-          }}
-          className="rounded-xl text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm h-9 px-4 shrink-0"
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          Request Overtime
-        </Button>
+        {user?.role !== "admin" && (
+          <Button
+            onClick={() => {
+              const eligible = myAttendance.find((a) => a.overtimeStatus === "none");
+              if (eligible) setSelectedAttId(eligible.id);
+              setCreateModalOpen(true);
+            }}
+            className="rounded-xl text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm h-9 px-4 shrink-0"
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            Request Overtime
+          </Button>
+        )}
       </div>
 
-      <Tabs defaultValue={isManagerOrAdmin && pendingOt.length > 0 ? "queue" : "my"}>
-        {isManagerOrAdmin && (
+      <Tabs defaultValue={isManagerOrAdmin ? "queue" : "my"}>
+        {isManagerOrAdmin && user?.role !== "admin" && (
           <TabsList className="rounded-2xl p-1 bg-slate-100 dark:bg-slate-800">
             <TabsTrigger value="queue" className="rounded-xl text-xs font-semibold">
               Team Review Queue ({pendingOt.length})
@@ -225,65 +227,67 @@ export function OvertimeView() {
           </TabsContent>
         )}
 
-        {/* My Personal Requests */}
-        <TabsContent value="my" className="mt-4">
-          <Card className="rounded-3xl border-slate-200/80 dark:border-slate-800 p-6 shadow-sm">
-            <CardHeader className="p-0 mb-4">
-              <CardTitle className="text-base font-bold">My Overtime Requests Log</CardTitle>
-              <CardDescription className="text-xs">
-                History of overtime hours submitted and their synchronization status
-              </CardDescription>
-            </CardHeader>
+        {/* My Personal Requests (Employees & Managers) */}
+        {user?.role !== "admin" && (
+          <TabsContent value="my" className="mt-4">
+            <Card className="rounded-3xl border-slate-200/80 dark:border-slate-800 p-6 shadow-sm">
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="text-base font-bold">My Overtime Requests Log</CardTitle>
+                <CardDescription className="text-xs">
+                  History of overtime hours submitted and their synchronization status
+                </CardDescription>
+              </CardHeader>
 
-            {myOt.length === 0 ? (
-              <div className="py-8 text-center text-xs text-slate-400">
-                You have not submitted any overtime requests yet.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs">Shift Date</TableHead>
-                      <TableHead className="text-xs">Hours</TableHead>
-                      <TableHead className="text-xs">Reason</TableHead>
-                      <TableHead className="text-xs">Status</TableHead>
-                      <TableHead className="text-xs">Reviewer Notes</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {myOt.map((ot) => (
-                      <TableRow key={ot.id} className="text-xs">
-                        <TableCell className="font-semibold">{ot.date}</TableCell>
-                        <TableCell className="font-bold text-indigo-600 dark:text-indigo-400">
-                          +{ot.hours}h
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">{ot.reason}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              ot.status === "approved"
-                                ? "border-emerald-500 text-emerald-600 bg-emerald-500/10"
-                                : ot.status === "rejected"
-                                  ? "border-rose-500 text-rose-600 bg-rose-500/10"
-                                  : "border-amber-500 text-amber-600 bg-amber-500/10"
-                            }
-                          >
-                            {ot.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-slate-500 text-[11px]">
-                          {ot.reviewNote || "—"}
-                        </TableCell>
+              {myOt.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  You have not submitted any overtime requests yet.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">Shift Date</TableHead>
+                        <TableHead className="text-xs">Hours</TableHead>
+                        <TableHead className="text-xs">Reason</TableHead>
+                        <TableHead className="text-xs">Status</TableHead>
+                        <TableHead className="text-xs">Reviewer Notes</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </Card>
-        </TabsContent>
+                    </TableHeader>
+                    <TableBody>
+                      {myOt.map((ot) => (
+                        <TableRow key={ot.id} className="text-xs">
+                          <TableCell className="font-semibold">{ot.date}</TableCell>
+                          <TableCell className="font-bold text-indigo-600 dark:text-indigo-400">
+                            +{ot.hours}h
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate">{ot.reason}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={
+                                ot.status === "approved"
+                                  ? "border-emerald-500 text-emerald-600 bg-emerald-500/10"
+                                  : ot.status === "rejected"
+                                    ? "border-rose-500 text-rose-600 bg-rose-500/10"
+                                    : "border-amber-500 text-amber-600 bg-amber-500/10"
+                              }
+                            >
+                              {ot.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-500 text-[11px]">
+                            {ot.reviewNote || "—"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Reject Modal */}

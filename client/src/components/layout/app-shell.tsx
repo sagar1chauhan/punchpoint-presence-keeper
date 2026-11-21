@@ -17,7 +17,6 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
@@ -73,33 +72,40 @@ export function AppShell({ children }: AppShellProps) {
   useEffect(() => {
     if (!user) return;
 
-    const socketUrl =
-      (import.meta.env["VITE_SOCKET_URL"] as string | undefined) ?? "http://localhost:5000";
-    let socket: Socket | null = null;
+    let active = true;
+    let socket: { disconnect: () => void; emit: (ev: string, ...args: unknown[]) => void; on: (ev: string, cb: (...args: unknown[]) => void) => void } | null = null;
 
-    try {
-      socket = io(socketUrl, {
-        transports: ["websocket", "polling"],
-        reconnectionAttempts: 5,
-      });
+    import("socket.io-client")
+      .then(({ io }) => {
+        if (!active) return;
+        const socketUrl =
+          (import.meta.env["VITE_SOCKET_URL"] as string | undefined) ?? "http://localhost:5000";
 
-      socket.on("connect", () => {
-        socket?.emit("join", user.id);
-        socket?.emit("join_role", user.role);
-      });
-
-      socket.on("notification", (notif: { message: string; type?: string }) => {
-        toast.info(notif.message, {
-          description: "PunchPoint Real-Time Alert",
-          duration: 6000,
+        socket = io(socketUrl, {
+          transports: ["websocket", "polling"],
+          reconnectionAttempts: 5,
         });
-        void refetchNotifs();
+
+        socket.on("connect", () => {
+          socket?.emit("join", user.id);
+          socket?.emit("join_role", user.role);
+        });
+
+        socket.on("notification", (rawNotif: unknown) => {
+          const notif = rawNotif as { message: string; type?: string };
+          toast.info(notif.message, {
+            description: "PunchPoint Real-Time Alert",
+            duration: 6000,
+          });
+          void refetchNotifs();
+        });
+      })
+      .catch((err) => {
+        console.warn("Socket.IO client load failed:", err);
       });
-    } catch (err) {
-      console.warn("Socket.IO connection failed:", err);
-    }
 
     return () => {
+      active = false;
       socket?.disconnect();
     };
   }, [user, refetchNotifs]);
@@ -145,24 +151,12 @@ export function AppShell({ children }: AppShellProps) {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  to="/attendance"
-                  className="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-                >
-                  My Attendance
-                </Link>
-                <Link
-                  to="/overtime"
-                  className="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-                >
-                  Overtime
-                </Link>
-                {(user.role === "manager" || user.role === "admin") && (
+                {user.role !== "admin" && (
                   <Link
-                    to="/validation"
+                    to="/attendance"
                     className="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
                   >
-                    Validation
+                    My Attendance
                   </Link>
                 )}
                 {user.role === "admin" && (
@@ -171,6 +165,20 @@ export function AppShell({ children }: AppShellProps) {
                     className="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
                   >
                     Users
+                  </Link>
+                )}
+                <Link
+                  to="/overtime"
+                  className="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                >
+                  {user.role === "admin" ? "OT Approvals" : "Overtime"}
+                </Link>
+                {(user.role === "manager" || user.role === "admin") && (
+                  <Link
+                    to="/validation"
+                    className="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                  >
+                    Validation
                   </Link>
                 )}
                 <Link
@@ -186,14 +194,16 @@ export function AppShell({ children }: AppShellProps) {
           {/* Right Header Controls */}
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Quick Punch Button */}
-              <Button
-                onClick={() => setPunchModalOpen(true)}
-                className="hidden sm:inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-medium shadow-md shadow-indigo-600/20 px-4 py-2 text-sm transition-all"
-              >
-                <Camera className="h-4 w-4" />
-                <span>Punch Check-In</span>
-              </Button>
+              {/* Quick Punch Button - Only for non-admin employees/managers */}
+              {user.role !== "admin" && (
+                <Button
+                  onClick={() => setPunchModalOpen(true)}
+                  className="hidden sm:inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-medium shadow-md shadow-indigo-600/20 px-4 py-2 text-sm transition-all"
+                >
+                  <Camera className="h-4 w-4" />
+                  <span>Punch Check-In</span>
+                </Button>
+              )}
 
               {/* Theme Toggle */}
               <Button
@@ -332,46 +342,82 @@ export function AppShell({ children }: AppShellProps) {
             <Home className="h-5 w-5" />
             <span>Home</span>
           </Link>
-          <Link
-            to="/attendance"
-            className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
-          >
-            <Clock className="h-5 w-5" />
-            <span>History</span>
-          </Link>
 
-          {/* Central Mobile Punch FAB */}
-          <button
-            onClick={() => setPunchModalOpen(true)}
-            className="-mt-5 h-12 w-12 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/40 ring-4 ring-white dark:ring-slate-900 active:scale-95 transition-transform"
-          >
-            <Camera className="h-6 w-6" />
-          </button>
-
-          <Link
-            to="/overtime"
-            className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
-          >
-            <FileSpreadsheet className="h-5 w-5" />
-            <span>Overtime</span>
-          </Link>
-
-          {user.role === "manager" || user.role === "admin" ? (
-            <Link
-              to="/validation"
-              className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
-            >
-              <UserCheck className="h-5 w-5" />
-              <span>Verify</span>
-            </Link>
+          {user.role === "admin" ? (
+            <>
+              <Link
+                to="/users"
+                className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
+              >
+                <Users className="h-5 w-5" />
+                <span>Users</span>
+              </Link>
+              <Link
+                to="/validation"
+                className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
+              >
+                <UserCheck className="h-5 w-5" />
+                <span>Verify</span>
+              </Link>
+              <Link
+                to="/overtime"
+                className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
+              >
+                <FileSpreadsheet className="h-5 w-5" />
+                <span>OT Queue</span>
+              </Link>
+              <Link
+                to="/reports"
+                className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
+              >
+                <FileText className="h-5 w-5" />
+                <span>Reports</span>
+              </Link>
+            </>
           ) : (
-            <Link
-              to="/reports"
-              className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
-            >
-              <FileText className="h-5 w-5" />
-              <span>Reports</span>
-            </Link>
+            <>
+              <Link
+                to="/attendance"
+                className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
+              >
+                <Clock className="h-5 w-5" />
+                <span>History</span>
+              </Link>
+
+              {/* Central Mobile Punch FAB */}
+              <button
+                onClick={() => setPunchModalOpen(true)}
+                className="-mt-5 h-12 w-12 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/40 ring-4 ring-white dark:ring-slate-900 active:scale-95 transition-transform"
+              >
+                <Camera className="h-6 w-6" />
+              </button>
+
+              <Link
+                to="/overtime"
+                className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
+              >
+                <FileSpreadsheet className="h-5 w-5" />
+                <span>Overtime</span>
+              </Link>
+
+              {user.role === "manager" ? (
+                <Link
+                  to="/validation"
+                  className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
+                >
+                  <UserCheck className="h-5 w-5" />
+                  <span>Verify</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/reports"
+                  className="flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600"
+                >
+                  <FileText className="h-5 w-5" />
+                  <span>Reports</span>
+                </Link>
+              )}
+            </>
           )}
         </div>
       )}
