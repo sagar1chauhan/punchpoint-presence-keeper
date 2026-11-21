@@ -30,7 +30,6 @@ export default defineConfig(async ({ command, mode }) => {
   }
 
   return {
-    css: { transformer: "lightningcss" },
     resolve: {
       alias: { "@": resolve(process.cwd(), "src") },
       dedupe: [

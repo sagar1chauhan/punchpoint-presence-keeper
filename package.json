@@ -18,5 +18,11 @@
     "build": "npm --prefix client run build",
     "seed": "npm --prefix server run seed",
     "test": "npm --prefix client test && npm --prefix server test"
+  },
+  "optionalDependencies": {
+    "lightningcss-linux-x64-gnu": ">=1.30.0",
+    "lightningcss-win32-x64-msvc": ">=1.30.0",
+    "@tailwindcss/oxide-linux-x64-gnu": ">=4.0.0",
+    "@tailwindcss/oxide-win32-x64-msvc": ">=4.0.0"
   }
 }
