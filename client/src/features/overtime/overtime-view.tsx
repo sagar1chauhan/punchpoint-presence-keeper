@@ -24,11 +24,15 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useGetMyOvertimeQuery,
   useGetPendingOvertimeQuery,
   useReviewOvertimeMutation,
+  useGetMyAttendanceQuery,
+  useRequestOvertimeMutation,
 } from "@/services/api";
 
 export function OvertimeView() {
@@ -36,6 +40,7 @@ export function OvertimeView() {
   const isManagerOrAdmin = user?.role === "manager" || user?.role === "admin";
 
   const { data: myOt = [], isLoading: isLoadingMyOt } = useGetMyOvertimeQuery();
+  const { data: myAttendance = [] } = useGetMyAttendanceQuery();
   const { data: pendingOt = [], isLoading: isLoadingPending } = useGetPendingOvertimeQuery(
     undefined,
     {
@@ -44,6 +49,40 @@ export function OvertimeView() {
   );
 
   const [reviewOt, { isLoading: isReviewing }] = useReviewOvertimeMutation();
+  const [createOt, { isLoading: isCreatingOt }] = useRequestOvertimeMutation();
+
+  // Create Overtime Dialog State
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedAttId, setSelectedAttId] = useState("");
+  const [claimHours, setClaimHours] = useState(1);
+  const [claimReason, setClaimReason] = useState("");
+
+  const handleCreateOt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAttId) {
+      toast.error("Please select an attendance shift to claim overtime for.");
+      return;
+    }
+    const attRecord = myAttendance.find((a) => a.id === selectedAttId);
+    try {
+      await createOt({
+        attendanceId: selectedAttId,
+        date: attRecord?.date,
+        hours: Number(claimHours),
+        reason: claimReason,
+      }).unwrap();
+      toast.success("Overtime request submitted successfully.");
+      setCreateModalOpen(false);
+      setClaimReason("");
+      setSelectedAttId("");
+    } catch (err: unknown) {
+      const errorMsg =
+        err && typeof err === "object" && "data" in err && typeof (err as { data?: { message?: string } }).data?.message === "string"
+          ? (err as { data: { message: string } }).data.message
+          : "Failed to submit overtime request.";
+      toast.error(errorMsg);
+    }
+  };
 
   // Reject Note Dialog
   const [rejectDialog, setRejectDialog] = useState<{
@@ -82,14 +121,27 @@ export function OvertimeView() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Clock className="h-6 w-6 text-indigo-600" />
-          Overtime Management
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Track overtime claims, review pending team submissions, and monitor approval workflows.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Clock className="h-6 w-6 text-indigo-600" />
+            Overtime Management
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Track overtime claims, review pending team submissions, and monitor approval workflows.
+          </p>
+        </div>
+        <Button
+          onClick={() => {
+            const eligible = myAttendance.find((a) => a.overtimeStatus === "none");
+            if (eligible) setSelectedAttId(eligible.id);
+            setCreateModalOpen(true);
+          }}
+          className="rounded-xl text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm h-9 px-4 shrink-0"
+        >
+          <Plus className="h-4 w-4 mr-1.5" />
+          Request Overtime
+        </Button>
       </div>
 
       <Tabs defaultValue={isManagerOrAdmin && pendingOt.length > 0 ? "queue" : "my"}>
@@ -269,6 +321,87 @@ export function OvertimeView() {
               Confirm Rejection
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Create Overtime Request Modal */}
+      <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl p-6">
+          <form onSubmit={handleCreateOt}>
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold">Request Overtime Approval</DialogTitle>
+              <DialogDescription className="text-xs text-slate-500">
+                Select a completed or ongoing shift to claim extra hours for manager review.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Select Attendance Shift</Label>
+                {myAttendance.length === 0 ? (
+                  <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">
+                    No attendance records found yet. Punch in/out first to log a shift.
+                  </p>
+                ) : (
+                  <select
+                    value={selectedAttId}
+                    onChange={(e) => setSelectedAttId(e.target.value)}
+                    className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
+                  >
+                    <option value="">-- Choose Shift Date --</option>
+                    {myAttendance.map((att) => (
+                      <option key={att.id} value={att.id}>
+                        {att.date} ({att.hours}h) — OT Status: {att.overtimeStatus}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Overtime Hours Claimed</Label>
+                <Input
+                  type="number"
+                  step="0.5"
+                  min="0.5"
+                  max="12"
+                  value={claimHours}
+                  onChange={(e) => setClaimHours(parseFloat(e.target.value) || 0)}
+                  className="rounded-xl h-9 text-xs"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Reason for Overtime</Label>
+                <Textarea
+                  placeholder="e.g. Critical release deployment and emergency support coverage..."
+                  value={claimReason}
+                  onChange={(e) => setClaimReason(e.target.value)}
+                  className="rounded-xl text-xs h-24"
+                  required
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCreateModalOpen(false)}
+                className="rounded-xl text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreatingOt || !selectedAttId}
+                className="rounded-xl text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                {isCreatingOt ? "Submitting..." : "Submit Claim"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

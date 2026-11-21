@@ -40,6 +40,7 @@ import {
   useReviewOvertimeMutation,
   useValidateAttendanceMutation,
 } from "@/services/api";
+import { resolveSelfieUrl } from "@/lib/utils";
 
 interface ManagerDashboardProps {
   user: User;
@@ -305,11 +306,11 @@ export function ManagerDashboard({ user }: ManagerDashboardProps) {
                       {selfieUrl ? (
                         <button
                           type="button"
-                          onClick={() => setLightboxUrl(selfieUrl)}
+                          onClick={() => setLightboxUrl(resolveSelfieUrl(selfieUrl))}
                           className="relative group h-9 w-9 rounded-lg overflow-hidden border border-slate-200 hover:ring-2 hover:ring-indigo-500 transition-all"
                         >
                           <img
-                            src={selfieUrl}
+                            src={resolveSelfieUrl(selfieUrl)}
                             alt="Selfie"
                             className="h-full w-full object-cover"
                           />

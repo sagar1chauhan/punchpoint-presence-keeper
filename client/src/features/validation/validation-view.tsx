@@ -29,6 +29,7 @@ import {
   useGetAllAttendanceQuery,
   useValidateAttendanceMutation,
 } from "@/services/api";
+import { resolveSelfieUrl } from "@/lib/utils";
 
 export function ValidationView() {
   const { user } = useAppSelector((state) => state.auth);
@@ -151,11 +152,11 @@ export function ValidationView() {
                       {selfieUrl ? (
                         <button
                           type="button"
-                          onClick={() => setZoomSelfieUrl(selfieUrl)}
+                          onClick={() => setZoomSelfieUrl(resolveSelfieUrl(selfieUrl))}
                           className="relative group h-10 w-10 rounded-xl overflow-hidden border border-slate-200 hover:ring-2 hover:ring-indigo-500 transition-all"
                         >
                           <img
-                            src={selfieUrl}
+                            src={resolveSelfieUrl(selfieUrl)}
                             alt="Selfie"
                             className="h-full w-full object-cover"
                           />

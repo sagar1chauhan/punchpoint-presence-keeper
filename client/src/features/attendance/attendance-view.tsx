@@ -35,6 +35,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useGetMyAttendanceQuery, useRequestOvertimeMutation } from "@/services/api";
+import { resolveSelfieUrl } from "@/lib/utils";
 
 export function AttendanceView() {
   const [page, setPage] = useState(1);
@@ -252,12 +253,12 @@ export function AttendanceView() {
                           <Eye className="h-3 w-3 mr-1" />
                           View
                         </Button>
-                        {record.overtimeStatus === "none" && record.hours > 8 && (
+                        {record.overtimeStatus === "none" && (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleOpenOtModal(record)}
-                            className="h-7 text-[11px] rounded-lg px-2 border-indigo-200 text-indigo-600"
+                            className="h-7 text-[11px] rounded-lg px-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30"
                           >
                             + Claim OT
                           </Button>
@@ -309,9 +310,13 @@ export function AttendanceView() {
                     {typeof selectedRecord.punchIn === "object" &&
                     selectedRecord.punchIn.selfieUrl ? (
                       <img
-                        src={selectedRecord.punchIn.selfieUrl}
+                        src={resolveSelfieUrl(selectedRecord.punchIn.selfieUrl)}
                         alt="In selfie"
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback display if image fails to load
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs text-slate-500">
@@ -338,9 +343,12 @@ export function AttendanceView() {
                     typeof selectedRecord.punchOut === "object" &&
                     selectedRecord.punchOut.selfieUrl ? (
                       <img
-                        src={selectedRecord.punchOut.selfieUrl}
+                        src={resolveSelfieUrl(selectedRecord.punchOut.selfieUrl)}
                         alt="Out selfie"
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs text-slate-500">
@@ -372,9 +380,24 @@ export function AttendanceView() {
             </div>
           )}
 
-          <DrawerFooter className="px-0 pt-2">
+          <DrawerFooter className="px-0 pt-2 grid grid-cols-2 gap-2">
+            {selectedRecord && selectedRecord.overtimeStatus === "none" ? (
+              <Button
+                variant="default"
+                className="rounded-xl text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+                onClick={() => {
+                  const rec = selectedRecord;
+                  setSelectedRecord(null);
+                  handleOpenOtModal(rec);
+                }}
+              >
+                + Request Overtime
+              </Button>
+            ) : (
+              <div />
+            )}
             <DrawerClose asChild>
-              <Button variant="outline" className="w-full rounded-xl text-xs">
+              <Button variant="outline" className="rounded-xl text-xs">
                 Close Drawer
               </Button>
             </DrawerClose>

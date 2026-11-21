@@ -248,7 +248,14 @@ export function EmployeeDashboard({ user, onOpenPunch }: EmployeeDashboardProps)
         </Card>
 
         <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 p-4">
-          <span className="text-xs text-slate-500 font-medium">Overtime Logged</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">Overtime Logged</span>
+            <Link to="/overtime">
+              <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[11px] text-indigo-600 hover:text-indigo-700">
+                Claim OT &rarr;
+              </Button>
+            </Link>
+          </div>
           <p className="text-2xl font-bold mt-1 text-violet-600 dark:text-violet-400">
             {totalOtHours.toFixed(1)}h
           </p>
