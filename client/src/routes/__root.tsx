@@ -13,7 +13,6 @@ import { Provider } from "react-redux";
 import { MotionConfig } from "framer-motion";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SessionBootstrap } from "@/app/session-bootstrap";
 import { Toaster } from "@/components/ui/sonner";
 import type { AppStore } from "@/app/store";
@@ -42,11 +41,8 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
-  console.error(error);
+  console.error("PunchPoint Runtime Error:", error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -84,18 +80,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; stor
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "PunchPoint | Attendance management" },
+      { title: "PunchPoint - Presence Keeper | Attendance Management" },
       {
         name: "description",
         content: "Attendance, shift hours, and team check-ins in one clear workspace.",
       },
       { name: "author", content: "PunchPoint" },
-      { property: "og:title", content: "PunchPoint | Attendance management" },
+      { property: "og:title", content: "PunchPoint - Presence Keeper | Attendance Management" },
       {
         property: "og:description",
         content: "Attendance, shift hours, and team check-ins in one clear workspace.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "PunchPoint" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -103,6 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; stor
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
