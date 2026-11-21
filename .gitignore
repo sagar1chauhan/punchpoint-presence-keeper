@@ -29,3 +29,7 @@ yarn-error.log*
 Thumbs.db
 .vscode
 .idea
+
+server/uploads/
+client/.cache/
+

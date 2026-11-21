@@ -244,31 +244,41 @@ export function PunchModal({ open, onOpenChange }: PunchModalProps) {
 
               {/* Location Status Pill */}
               <div className="w-full flex items-center justify-between text-xs px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 truncate">
                   <MapPin
-                    className={`h-4 w-4 ${location ? "text-emerald-500" : "text-amber-500"}`}
+                    className={`h-4 w-4 shrink-0 ${location ? "text-emerald-500" : "text-amber-500"}`}
                   />
                   {location ? (
-                    <span>
-                      GPS: {location.lat.toFixed(4)}, {location.lng.toFixed(4)} (&plusmn;
-                      {location.accuracy}m)
+                    <span className="truncate">
+                      GPS: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                     </span>
                   ) : locationError ? (
-                    <span className="text-rose-500 truncate max-w-[200px]">{locationError}</span>
+                    <span className="text-rose-500 truncate max-w-[180px]">{locationError}</span>
                   ) : (
                     <span className="text-slate-400 animate-pulse">Detecting GPS location...</span>
                   )}
                 </div>
-                {!location && (
+                <div className="flex items-center gap-1 shrink-0">
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-6 px-2 text-[10px]"
-                    onClick={fetchLocation}
+                    className="h-6 px-2 text-[10px] text-indigo-600 dark:text-indigo-400"
+                    onClick={() => setLocation({ lat: 28.6139, lng: 77.209, accuracy: 5 })}
+                    title="Simulate Office GPS (New Delhi Office)"
                   >
-                    Refresh
+                    Office GPS
                   </Button>
-                )}
+                  {!location && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2 text-[10px]"
+                      onClick={fetchLocation}
+                    >
+                      Retry
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Capture Button */}

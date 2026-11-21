@@ -6,6 +6,7 @@ import { saveSelfie } from "../services/imageService.js";
 import { checkGeofence } from "../utils/haversine.js";
 import { sendError, sendSuccess } from "../utils/response.js";
 import { emitToUser } from "../services/socketService.js";
+import logger from "../logger/logger.js";
 
 const punchSchema = z.object({
   lat: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
@@ -34,6 +35,7 @@ export const punchIn = async (req, res, next) => {
   try {
     const parsed = punchSchema.safeParse(req.body);
     if (!parsed.success) {
+      logger.warn(`Punch validation error: ${JSON.stringify(parsed.error.errors)}`);
       return sendError(res, "Validation error", 400, parsed.error.errors);
     }
 
@@ -41,12 +43,17 @@ export const punchIn = async (req, res, next) => {
     const punchTime = time ? new Date(time) : new Date();
     const today = getLocalDateString(punchTime);
 
+    logger.info(`Punch-in attempt by ${req.user.name} (${req.user.email}) at coords: ${lat}, ${lng}`);
+
     // Geofencing verification
     const geofence = checkGeofence(lat, lng);
     if (geofence.enabled && !geofence.within) {
+      logger.warn(
+        `Punch-in rejected: ${geofence.distanceMeters}m from office exceeds radius ${geofence.radiusMeters}m`
+      );
       return sendError(
         res,
-        `Outside allowable office radius (${geofence.distanceMeters}m from office, max allowed: ${geofence.radiusMeters}m)`,
+        `Outside allowable office radius (${geofence.distanceMeters}m from office, max allowed: ${geofence.radiusMeters}m). Set ENABLE_GEOFENCE=false or click 'Simulate Office GPS' to punch.`,
         400
       );
     }
@@ -54,6 +61,7 @@ export const punchIn = async (req, res, next) => {
     // Check one punch-in per user per day rule
     const existing = await Attendance.findOne({ userId: req.user._id, date: today });
     if (existing) {
+      logger.warn(`Punch-in rejected: user ${req.user.name} already punched in today (${today})`);
       return sendError(res, `You have already punched in for today (${today}).`, 400);
     }
 

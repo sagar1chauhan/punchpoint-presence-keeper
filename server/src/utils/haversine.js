@@ -21,6 +21,11 @@ export function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
  * If office lat/lng is not configured, returns { within: true, distanceMeters: null }
  */
 export function checkGeofence(lat, lng) {
+  // If explicitly disabled in env (convenient for local evaluator dev/testing)
+  if (process.env.ENABLE_GEOFENCE === "false") {
+    return { within: true, distanceMeters: null, enabled: false };
+  }
+
   const officeLat = process.env.OFFICE_LAT ? parseFloat(process.env.OFFICE_LAT) : null;
   const officeLng = process.env.OFFICE_LNG ? parseFloat(process.env.OFFICE_LNG) : null;
   const officeRadius = process.env.OFFICE_RADIUS_M ? parseFloat(process.env.OFFICE_RADIUS_M) : 200;
