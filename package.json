@@ -1,0 +1,22 @@
+{
+  "name": "punchpoint-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "client:dev": "npm --prefix client dev",
+    "client:build": "npm --prefix client run build",
+    "client:lint": "npm --prefix client run lint",
+    "client:test": "npm --prefix client test",
+    "server:dev": "npm --prefix server dev",
+    "server:start": "npm --prefix server start",
+    "server:seed": "npm --prefix server run seed",
+    "server:test": "npm --prefix server test",
+    "build": "npm --prefix client run build",
+    "seed": "npm --prefix server run seed",
+    "test": "npm --prefix client test && npm --prefix server test"
+  }
+}
