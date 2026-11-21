@@ -78,6 +78,9 @@ attendanceSchema.methods.toJSON = function () {
   const obj = this.toObject();
   obj.id = obj._id.toString();
   delete obj.__v;
+  // Field aliases for client compatibility
+  obj.hours = typeof obj.totalHours === "number" ? obj.totalHours : 0;
+  obj.validationStatus = (obj.validation && obj.validation.status) ? obj.validation.status : "pending";
   // Provide convenient client format
   if (obj.punchIn && obj.punchIn.time) {
     const d = new Date(obj.punchIn.time);

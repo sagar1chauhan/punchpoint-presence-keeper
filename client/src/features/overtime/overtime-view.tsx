@@ -57,6 +57,16 @@ export function OvertimeView() {
   const [claimHours, setClaimHours] = useState(1);
   const [claimReason, setClaimReason] = useState("");
 
+  const handleSelectShift = (id: string) => {
+    setSelectedAttId(id);
+    const chosen = myAttendance.find((a) => a.id === id);
+    if (chosen) {
+      const shiftHours = typeof chosen.hours === "number" ? chosen.hours : (chosen.totalHours ?? 0);
+      const exactOt = shiftHours > 8 ? Math.round((shiftHours - 8) * 10) / 10 : 1.0;
+      setClaimHours(exactOt > 0 ? exactOt : 1.0);
+    }
+  };
+
   const handleCreateOt = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAttId) {
@@ -348,19 +358,35 @@ export function OvertimeView() {
                 ) : (
                   <select
                     value={selectedAttId}
-                    onChange={(e) => setSelectedAttId(e.target.value)}
+                    onChange={(e) => handleSelectShift(e.target.value)}
                     className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                   >
                     <option value="">-- Choose Shift Date --</option>
-                    {myAttendance.map((att) => (
-                      <option key={att.id} value={att.id}>
-                        {att.date} ({att.hours}h) — OT Status: {att.overtimeStatus}
-                      </option>
-                    ))}
+                    {myAttendance.map((att) => {
+                      const dur = typeof att.hours === "number" ? att.hours : (att.totalHours ?? 0);
+                      return (
+                        <option key={att.id} value={att.id}>
+                          {att.date} ({dur}h) — OT Status: {att.overtimeStatus}
+                        </option>
+                      );
+                    })}
                   </select>
                 )}
               </div>
+
+              {(() => {
+                const chosen = myAttendance.find((a) => a.id === selectedAttId);
+                if (!chosen) return null;
+                const shiftHours = typeof chosen.hours === "number" ? chosen.hours : (chosen.totalHours ?? 0);
+                if (shiftHours <= 8) return null;
+                return (
+                  <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-700 dark:text-indigo-300 flex items-center justify-between">
+                    <span>Shift Duration: <strong>{shiftHours}h</strong> (Standard: 8.0h)</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">+{claimHours}h OT</span>
+                  </div>
+                );
+              })()}
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Overtime Hours Claimed</Label>

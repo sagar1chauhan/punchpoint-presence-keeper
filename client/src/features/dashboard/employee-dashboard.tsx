@@ -79,11 +79,20 @@ export function EmployeeDashboard({ user, onOpenPunch }: EmployeeDashboardProps)
 
   // KPIs
   const past7Days = attendanceList.slice(0, 7);
-  const totalHoursThisWeek = past7Days.reduce((acc, r) => acc + (r.hours || 0), 0);
+  const totalHoursThisWeek = past7Days.reduce(
+    (acc, r) => acc + (typeof r.hours === "number" ? r.hours : (r.totalHours ?? 0)),
+    0
+  );
   const completedShifts = past7Days.filter((r) => r.shiftStatus === "completed").length;
   const onTimePercentage =
     past7Days.length > 0 ? Math.round((completedShifts / past7Days.length) * 100) : 100;
   const totalOtHours = overtimeRequests.reduce((acc, ot) => acc + (ot.hours || 0), 0);
+  const approvedOtHours = overtimeRequests
+    .filter((ot) => ot.status === "approved")
+    .reduce((acc, ot) => acc + (ot.hours || 0), 0);
+  const pendingOtHours = overtimeRequests
+    .filter((ot) => ot.status === "pending")
+    .reduce((acc, ot) => acc + (ot.hours || 0), 0);
 
   // Chart data from recent attendance
   const chartData = [
@@ -260,7 +269,8 @@ export function EmployeeDashboard({ user, onOpenPunch }: EmployeeDashboardProps)
             {totalOtHours.toFixed(1)}h
           </p>
           <span className="text-[11px] text-slate-400 mt-1 block">
-            {overtimeRequests.length} requests filed
+            {approvedOtHours > 0 ? `${approvedOtHours.toFixed(1)}h approved` : ""}{" "}
+            {pendingOtHours > 0 ? `(${pendingOtHours.toFixed(1)}h pending)` : `(${overtimeRequests.length} requests)`}
           </span>
         </Card>
       </div>
@@ -350,12 +360,15 @@ export function EmployeeDashboard({ user, onOpenPunch }: EmployeeDashboardProps)
                       : record.punchOut
                     : "—";
 
+                  const valStatus = record.validationStatus || record.validation?.status || "pending";
+                  const shiftDur = typeof record.hours === "number" ? record.hours : (record.totalHours ?? 0);
+
                   return (
                     <TableRow key={record.id} className="text-xs">
                       <TableCell className="font-medium">{record.date}</TableCell>
                       <TableCell>{inFormatted}</TableCell>
                       <TableCell>{outFormatted}</TableCell>
-                      <TableCell className="font-semibold">{record.hours}h</TableCell>
+                      <TableCell className="font-semibold">{shiftDur}h</TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
@@ -372,14 +385,14 @@ export function EmployeeDashboard({ user, onOpenPunch }: EmployeeDashboardProps)
                         <Badge
                           variant="outline"
                           className={
-                            record.validationStatus === "valid"
+                            valStatus === "valid"
                               ? "border-indigo-500/40 text-indigo-600 bg-indigo-500/10"
-                              : record.validationStatus === "invalid"
+                              : valStatus === "invalid"
                                 ? "border-rose-500/40 text-rose-600 bg-rose-500/10"
-                                : "border-slate-500/40 text-slate-500 bg-slate-500/10"
+                                : "border-amber-500/40 text-amber-600 bg-amber-500/10"
                           }
                         >
-                          {record.validationStatus}
+                          {valStatus}
                         </Badge>
                       </TableCell>
                     </TableRow>

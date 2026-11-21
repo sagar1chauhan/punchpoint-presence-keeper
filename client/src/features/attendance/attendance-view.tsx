@@ -61,11 +61,15 @@ export function AttendanceView() {
   const [otModalOpen, setOtModalOpen] = useState(false);
   const [otAttendanceId, setOtAttendanceId] = useState<string>("");
   const [otHours, setOtHours] = useState<number>(1.0);
+  const [otShiftHours, setOtShiftHours] = useState<number>(8.0);
   const [otReason, setOtReason] = useState<string>("");
 
   const handleOpenOtModal = (rec: AttendanceRecord) => {
     setOtAttendanceId(rec.id);
-    const calculatedExtra = rec.hours > 8 ? Math.round((rec.hours - 8) * 10) / 10 : 1.0;
+    const shiftHours = typeof rec.hours === "number" ? rec.hours : (rec.totalHours ?? 0);
+    setOtShiftHours(shiftHours);
+    // Exact calculation: if shift > 8h, overtime is (shiftHours - 8h)
+    const calculatedExtra = shiftHours > 8 ? Math.round((shiftHours - 8) * 10) / 10 : 1.0;
     setOtHours(calculatedExtra > 0 ? calculatedExtra : 1.0);
     setOtReason("");
     setOtModalOpen(true);
@@ -192,6 +196,9 @@ export function AttendanceView() {
                       : record.punchOut
                     : "—";
 
+                  const shiftDuration = typeof record.hours === "number" ? record.hours : (record.totalHours ?? 0);
+                  const valStatus = record.validationStatus || record.validation?.status || "pending";
+
                   return (
                     <TableRow
                       key={record.id}
@@ -201,7 +208,7 @@ export function AttendanceView() {
                       <TableCell>{inFormatted}</TableCell>
                       <TableCell>{outFormatted}</TableCell>
                       <TableCell className="font-bold text-slate-900 dark:text-slate-100">
-                        {record.hours}h
+                        {shiftDuration}h
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -219,14 +226,14 @@ export function AttendanceView() {
                         <Badge
                           variant="outline"
                           className={
-                            record.validationStatus === "valid"
-                              ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
-                              : record.validationStatus === "invalid"
-                                ? "border-rose-500/40 text-rose-600 bg-rose-500/10"
-                                : "border-slate-400 text-slate-500"
+                            valStatus === "valid"
+                              ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10 font-semibold"
+                              : valStatus === "invalid"
+                                ? "border-rose-500/40 text-rose-600 bg-rose-500/10 font-semibold"
+                                : "border-amber-500/40 text-amber-600 bg-amber-500/10 font-semibold"
                           }
                         >
-                          {record.validationStatus}
+                          {valStatus}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -420,6 +427,12 @@ export function AttendanceView() {
             </DialogHeader>
 
             <div className="space-y-3 py-4">
+              {otShiftHours > 8 && (
+                <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-700 dark:text-indigo-300 flex items-center justify-between">
+                  <span>Shift Duration: <strong>{otShiftHours}h</strong> (Standard: 8.0h)</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">+{otHours}h OT</span>
+                </div>
+              )}
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Overtime Hours Claimed</Label>
                 <Input

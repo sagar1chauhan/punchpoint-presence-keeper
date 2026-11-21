@@ -142,7 +142,7 @@ function RootComponent() {
           <MotionConfig reducedMotion="user">
             <SessionBootstrap />
             <Outlet />
-            <Toaster richColors position="top-right" />
+            <Toaster richColors position="bottom-right" />
           </MotionConfig>
         </ThemeProvider>
       </QueryClientProvider>

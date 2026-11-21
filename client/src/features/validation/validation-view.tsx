@@ -93,7 +93,7 @@ export function ValidationView() {
     }
   };
 
-  const pendingRecords = records.filter((r) => r.validationStatus === "pending");
+  const pendingRecords = records.filter((r) => (r.validationStatus || r.validation?.status || "pending") === "pending");
 
   return (
     <div className="space-y-6">
@@ -174,20 +174,27 @@ export function ValidationView() {
                         {coords}
                       </div>
                     </TableCell>
-                    <TableCell className="font-bold">{rec.hours}h</TableCell>
+                    <TableCell className="font-bold">
+                      {typeof rec.hours === "number" ? rec.hours : (rec.totalHours ?? 0)}h
+                    </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          rec.validationStatus === "valid"
-                            ? "border-emerald-500 text-emerald-600 bg-emerald-500/10"
-                            : rec.validationStatus === "invalid"
-                              ? "border-rose-500 text-rose-600 bg-rose-500/10"
-                              : "border-slate-400 text-slate-500"
-                        }
-                      >
-                        {rec.validationStatus}
-                      </Badge>
+                      {(() => {
+                        const status = rec.validationStatus || rec.validation?.status || "pending";
+                        return (
+                          <Badge
+                            variant="outline"
+                            className={
+                              status === "valid"
+                                ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10 font-semibold"
+                                : status === "invalid"
+                                  ? "border-rose-500/40 text-rose-600 bg-rose-500/10 font-semibold"
+                                  : "border-amber-500/40 text-amber-600 bg-amber-500/10 font-semibold"
+                            }
+                          >
+                            {status}
+                          </Badge>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button

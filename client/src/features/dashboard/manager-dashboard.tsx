@@ -82,7 +82,9 @@ export function ManagerDashboard({ user }: ManagerDashboardProps) {
   const teamToday = teamAttendance.filter((r) => r.date === todayStr);
   const presentCount = teamToday.length;
   const completedShifts = teamAttendance.filter((r) => r.shiftStatus === "completed").length;
-  const pendingValidations = teamAttendance.filter((r) => r.validationStatus === "pending");
+  const pendingValidations = teamAttendance.filter(
+    (r) => (r.validationStatus || r.validation?.status || "pending") === "pending"
+  );
 
   const handleApproveOt = async (id: string) => {
     try {
@@ -322,7 +324,9 @@ export function ManagerDashboard({ user }: ManagerDashboardProps) {
                         <span className="text-slate-400">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="font-semibold">{record.hours}h</TableCell>
+                    <TableCell className="font-semibold">
+                      {typeof record.hours === "number" ? record.hours : (record.totalHours ?? 0)}h
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
@@ -336,18 +340,23 @@ export function ManagerDashboard({ user }: ManagerDashboardProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          record.validationStatus === "valid"
-                            ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
-                            : record.validationStatus === "invalid"
-                              ? "border-rose-500/40 text-rose-600 bg-rose-500/10"
-                              : "border-slate-400 text-slate-500"
-                        }
-                      >
-                        {record.validationStatus}
-                      </Badge>
+                      {(() => {
+                        const valStatus = record.validationStatus || record.validation?.status || "pending";
+                        return (
+                          <Badge
+                            variant="outline"
+                            className={
+                              valStatus === "valid"
+                                ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10 font-semibold"
+                                : valStatus === "invalid"
+                                  ? "border-rose-500/40 text-rose-600 bg-rose-500/10 font-semibold"
+                                  : "border-amber-500/40 text-amber-600 bg-amber-500/10 font-semibold"
+                            }
+                          >
+                            {valStatus}
+                          </Badge>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-right space-x-2">
                       {record.validationStatus === "pending" ? (
