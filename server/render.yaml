@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: punchpoint-server
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLIENT_URL
+        sync: false
+      - key: ALLOW_DEMO_ROLES
+        value: "true"
+      - key: OFFICE_LAT
+        value: "28.6139"
+      - key: OFFICE_LNG
+        value: "77.2090"
+      - key: OFFICE_RADIUS_M
+        value: "200"
