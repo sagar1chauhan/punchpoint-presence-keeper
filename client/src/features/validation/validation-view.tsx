@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserCheck, ShieldAlert, CheckCircle2, Eye, MapPin, ZoomIn } from "lucide-react";
+import { UserCheck, ShieldAlert, CheckCircle2, Eye, MapPin, ZoomIn, Loader2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { AttendanceRecord } from "@/types/attendance";
@@ -39,7 +39,8 @@ export function ValidationView() {
   const { data: allAtt = [] } = useGetAllAttendanceQuery(undefined, { skip: !isAdmin });
   const records = isAdmin ? allAtt : teamAtt;
 
-  const [validateMut, { isLoading: isValidating }] = useValidateAttendanceMutation();
+  const [validateMut] = useValidateAttendanceMutation();
+  const [validatingId, setValidatingId] = useState<string | null>(null);
 
   // Photo Lightbox & Inspection State
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
@@ -57,6 +58,7 @@ export function ValidationView() {
   });
 
   const handleMarkValid = async (id: string) => {
+    setValidatingId(id);
     try {
       await validateMut({
         id,
@@ -68,6 +70,8 @@ export function ValidationView() {
       }
     } catch {
       toast.error("Failed to mark attendance as valid.");
+    } finally {
+      setValidatingId(null);
     }
   };
 
@@ -78,6 +82,7 @@ export function ValidationView() {
       return;
     }
 
+    setValidatingId(invalidDialog.attId);
     try {
       await validateMut({
         id: invalidDialog.attId,
@@ -90,6 +95,8 @@ export function ValidationView() {
       }
     } catch {
       toast.error("Failed to mark attendance as invalid.");
+    } finally {
+      setValidatingId(null);
     }
   };
 
@@ -200,17 +207,20 @@ export function ValidationView() {
                       <Button
                         size="sm"
                         onClick={() => void handleMarkValid(rec.id)}
-                        disabled={isValidating}
-                        className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3"
+                        disabled={validatingId === rec.id}
+                        className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 shadow-sm transition-all"
                       >
+                        {validatingId === rec.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                        ) : null}
                         Valid
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => setInvalidDialog({ open: true, attId: rec.id, remarks: "" })}
-                        disabled={isValidating}
-                        className="h-8 rounded-xl border-rose-300 text-rose-600 hover:bg-rose-50 text-xs px-3"
+                        disabled={validatingId === rec.id}
+                        className="h-8 rounded-xl border-rose-300 text-rose-600 hover:bg-rose-50 text-xs px-3 transition-all"
                       >
                         Invalid
                       </Button>

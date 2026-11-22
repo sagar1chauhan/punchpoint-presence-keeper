@@ -48,7 +48,8 @@ export function OvertimeView() {
     },
   );
 
-  const [reviewOt, { isLoading: isReviewing }] = useReviewOvertimeMutation();
+  const [reviewOt] = useReviewOvertimeMutation();
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [createOt, { isLoading: isCreatingOt }] = useRequestOvertimeMutation();
 
   // Create Overtime Dialog State
@@ -106,16 +107,20 @@ export function OvertimeView() {
   });
 
   const handleApprove = async (id: string) => {
+    setReviewingId(id);
     try {
       await reviewOt({ id, body: { status: "approved", reviewNote: "Approved" } }).unwrap();
       toast.success("Overtime request approved.");
     } catch {
       toast.error("Failed to approve overtime request.");
+    } finally {
+      setReviewingId(null);
     }
   };
 
   const handleConfirmReject = async () => {
     if (!rejectDialog.otId) return;
+    setReviewingId(rejectDialog.otId);
     try {
       await reviewOt({
         id: rejectDialog.otId,
@@ -125,6 +130,8 @@ export function OvertimeView() {
       setRejectDialog({ open: false, otId: null, note: "" });
     } catch {
       toast.error("Failed to reject overtime request.");
+    } finally {
+      setReviewingId(null);
     }
   };
 
@@ -212,7 +219,7 @@ export function OvertimeView() {
                             <Button
                               size="sm"
                               onClick={() => void handleApprove(ot.id)}
-                              disabled={isReviewing}
+                              disabled={reviewingId === ot.id}
                               className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3"
                             >
                               Approve
@@ -221,7 +228,7 @@ export function OvertimeView() {
                               size="sm"
                               variant="outline"
                               onClick={() => setRejectDialog({ open: true, otId: ot.id, note: "" })}
-                              disabled={isReviewing}
+                              disabled={reviewingId === ot.id}
                               className="h-8 rounded-xl border-rose-300 text-rose-600 hover:bg-rose-50 text-xs px-3"
                             >
                               Reject
