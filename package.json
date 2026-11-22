@@ -19,7 +19,7 @@
     "server:start": "node server/src/server.js",
     "server:seed": "node server/src/seed/seed.js",
     "server:test": "npm --prefix server test",
-    "build": "npm --prefix client run build && node -e \"const fs = require('fs'); const src = fs.existsSync('client/dist') ? 'client/dist' : (fs.existsSync('client/.output/public') ? 'client/.output/public' : null); if (src) fs.cpSync(src, 'dist', {recursive: true}); else if (!fs.existsSync('dist')) fs.mkdirSync('dist');\"",
+    "build": "npm --prefix client run build && node -e \"const fs = require('fs'); if (fs.existsSync('client/.vercel/output')) fs.cpSync('client/.vercel/output', '.vercel/output', {recursive: true});\"",
     "seed": "node server/src/seed/seed.js",
     "test": "npm --prefix client test && npm --prefix server test"
   },
