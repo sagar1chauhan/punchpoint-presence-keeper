@@ -4,6 +4,8 @@
 
 > Full-stack attendance management system engineered for precision workforce tracking with live camera verification, geolocation authentication, role-based workflows (Employee, Manager, Admin), overtime synchronization, and reporting.
 
+**Maintained by:** Sagar Chauhan (<sagarchouhan7609@gmail.com>)
+
 ---
 
 ## Architecture Overview
