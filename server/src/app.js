@@ -77,6 +77,17 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
 });
 
+// Root informational endpoint
+app.get("/", (_req, res) => {
+  res.status(200).json({
+    service: "PunchPoint Attendance Management System API",
+    status: "active",
+    environment: process.env.NODE_ENV || "development",
+    healthCheck: "/health",
+    apiPrefix: "/api"
+  });
+});
+
 // Mount API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/attendance", attendanceRoutes);
