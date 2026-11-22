@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { clearSession, setVerifiedUser } from "@/features/auth/authSlice";
+import { clearSession, setVerifiedUser, AUTH_STORAGE_KEY } from "@/features/auth/authSlice";
 import { useTheme } from "@/components/layout/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { PunchModal } from "@/features/punch/punch-modal";
 import {
+  api,
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
   useGetMeQuery,
@@ -112,7 +113,11 @@ export function AppShell({ children }: AppShellProps) {
 
   const handleLogout = () => {
     dispatch(clearSession());
-    toast.success("You have been signed out");
+    dispatch(api.util.resetApiState());
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      window.location.href = "/";
+    }
   };
 
   const roleBadgeColor = {
