@@ -7,9 +7,9 @@
     "server"
   ],
   "scripts": {
-    "start": "node server/src/server.js",
-    "start:server": "node server/src/server.js",
-    "start:client": "node client/.output/server/index.mjs",
+    "start": "node init && node server/src/server.js",
+    "start:server": "node init && node server/src/server.js",
+    "start:client": "node init && node client/.output/server/index.mjs",
     "client:dev": "npm --prefix client dev",
     "client:build": "npm --prefix client run build",
     "client:start": "node client/.output/server/index.mjs",
@@ -19,7 +19,7 @@
     "server:start": "node server/src/server.js",
     "server:seed": "node server/src/seed/seed.js",
     "server:test": "npm --prefix server test",
-    "build": "npm --prefix client run build && node -e \"const fs = require('fs'); if (fs.existsSync('client/.vercel/output')) fs.cpSync('client/.vercel/output', '.vercel/output', {recursive: true});\"",
+    "build": "node init && npm --prefix client run build && node -e \"const fs = require('fs'); if (fs.existsSync('client/.vercel/output')) fs.cpSync('client/.vercel/output', '.vercel/output', {recursive: true});\"",
     "seed": "node server/src/seed/seed.js",
     "test": "npm --prefix client test && npm --prefix server test"
   },

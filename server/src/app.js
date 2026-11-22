@@ -36,6 +36,8 @@ app.use(
         process.env.NODE_ENV !== "production" ||
         origin.includes("localhost") ||
         origin.includes("127.0.0.1") ||
+        origin.endsWith(".vercel.app") ||
+        origin.endsWith(".onrender.com") ||
         allowedOrigins.length === 0 ||
         allowedOrigins.includes("*") ||
         allowedOrigins.includes(origin)

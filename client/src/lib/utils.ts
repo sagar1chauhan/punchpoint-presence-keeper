@@ -14,7 +14,13 @@ export function resolveSelfieUrl(url?: string | null): string {
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
     return url;
   }
-  const apiUrl = (import.meta.env.VITE_API_URL as string) || "http://localhost:5000/api";
+  const defaultApiUrl =
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+      ? "https://punchpoint-presence-keeper.onrender.com/api"
+      : "http://localhost:5000/api";
+  const apiUrl = (import.meta.env.VITE_API_URL as string) || defaultApiUrl;
   const serverOrigin = apiUrl.replace(/\/api\/?$/, "");
   const cleanPath = url.startsWith("/") ? url : `/${url}`;
   return `${serverOrigin}${cleanPath}`;

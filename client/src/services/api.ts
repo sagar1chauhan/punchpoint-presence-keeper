@@ -42,8 +42,15 @@ export type UpdateUserInput = {
   isActive?: boolean;
 };
 
+const defaultApiUrl =
+  typeof window !== "undefined" &&
+  window.location.hostname !== "localhost" &&
+  window.location.hostname !== "127.0.0.1"
+    ? "https://punchpoint-presence-keeper.onrender.com/api"
+    : "http://localhost:5000/api";
+
 const realBaseQuery = fetchBaseQuery({
-  baseUrl: (import.meta.env["VITE_API_URL"] as string | undefined) ?? "http://localhost:5000/api",
+  baseUrl: (import.meta.env["VITE_API_URL"] as string | undefined) ?? defaultApiUrl,
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as { auth: AuthState }).auth.token;
     if (token) headers.set("authorization", `Bearer ${token}`);

@@ -5,10 +5,10 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "start": "node init && node src/server.js",
+    "dev": "node init && nodemon src/server.js",
     "seed": "node src/seed/seed.js",
-    "test": "vitest run"
+    "test": "bun test || vitest run"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -79,8 +79,14 @@ export function AppShell({ children }: AppShellProps) {
     import("socket.io-client")
       .then(({ io }) => {
         if (!active) return;
+        const defaultSocketUrl =
+          typeof window !== "undefined" &&
+          window.location.hostname !== "localhost" &&
+          window.location.hostname !== "127.0.0.1"
+            ? "https://punchpoint-presence-keeper.onrender.com"
+            : "http://localhost:5000";
         const socketUrl =
-          (import.meta.env["VITE_SOCKET_URL"] as string | undefined) ?? "http://localhost:5000";
+          (import.meta.env["VITE_SOCKET_URL"] as string | undefined) ?? defaultSocketUrl;
 
         socket = io(socketUrl, {
           transports: ["websocket", "polling"],
